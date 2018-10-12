@@ -1,0 +1,69 @@
+{
+    "title": "Netflix_ToddlerFountain",
+    "id": "104",
+    "season": "1",
+    "episode": "1",
+    "mezzanine": "https://media.xiph.org/video/derf/webm/Netflix_ToddlerFountain_4096x2160_60fps_10bit_420.webm",
+    "clips": [
+        { "start": "00:00:00", "duration": "00:00:20", "tags": ["action"] }
+    ],
+    "tests": { 
+        "crf": {
+                "codec": "h264",
+                "rc": "crf",
+                "bframes": "3",
+                "bitrate": "4000k",
+                "bufsize": "12000k",
+                "crf": "23",
+                "maxrate": "8000k",
+                "gop": "48",
+                "mingop": "48",
+                "preset": "slow",
+                "profile": "high",
+                "refs": "4",
+                "resolution": "1920x1080",
+                "threads": "4",
+                "tune": "",
+                "extra_options": "",
+                "vp9_speed": "1"
+        },
+        "abr": {
+                "codec": "h264",
+                "rc": "abr",
+                "bframes": "3",
+                "bitrate": "4000k",
+                "bufsize": "12000k",
+                "crf": "off",
+                "maxrate": "4500k",
+                "gop": "48",
+                "mingop": "48",
+                "preset": "slow",
+                "profile": "high",
+                "refs": "4",
+                "resolution": "1920x1080",
+                "threads": "4",
+                "tune": "",
+                "extra_options": "",
+                "vp9_speed": "1"
+        },
+        "vp9": {
+                "codec": "vp9",
+                "rc": "crf",
+                "bframes": "3",
+                "bitrate": "4000k",
+                "bufsize": "12000k",
+                "crf": "35",
+                "maxrate": "8000k",
+                "gop": "48",
+                "mingop": "48",
+                "preset": "slow",
+                "profile": "high",
+                "refs": "4",
+                "resolution": "1920x1080",
+                "threads": "4",
+                "tune": "",
+                "extra_options": "",
+                "vp9_speed": "1"
+        }
+    }
+}

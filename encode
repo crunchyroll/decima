@@ -1,0 +1,121 @@
+#!/bin/sh
+
+## Input variables
+mezzanine="$1"
+encode="$2"
+vcodec="$3"
+
+## ENV settings
+threads=${threads:-4}
+fps=${fps:-29.97}
+aspect=${aspect:-1.778}
+maxrate=${maxrate:-8000k}
+bitrate=${bitrate:-4000k}
+bufsize=${bufsize:-12000k}
+crf=${crf:-23}
+bframes=${bframes:-3}
+refs=${refs:-4}
+tune=${tune:-""}
+preset=${preset:-slow}
+profile=${profile:-high}
+gop=${gop:-48}
+mingop=${mingop:-48}
+resolution=${resolution:-1920x1080}
+ac=${ac:-2}
+ar=${ar:-48000}
+ab=${ab:-128000}
+audio_profile=aac_low
+ap=${ap:-"-profile:a $audio_profile"}
+metrics=${metrics:-""}
+vp9_speed=${vp9_speed:-1}
+extra_options=${extra_options:-""}
+
+## this value must equal the number of local variables declared above
+var_count=36
+
+if [ "$vcodec" = "vp9" ]; then
+    vcodec=libvpx-vp9
+elif [ "$vcodec" = "" ]; then
+    vcodec=libx264
+fi
+
+acodec=libfdk_aac
+format=mp4
+
+if [ "$tune" = "" ]; then
+    tune=
+else
+    tune="-tune $tune"
+fi
+
+profile="-profile:v $profile"
+x264tune="-bf $bframes -refs $refs -preset $preset"
+
+if [ "$mezzanine" = "" -o "$encode" = "" ]; then
+	## print out all variables set
+	echo "Encoding with values:"
+	echo "---"
+	set -o posix; set | tail -n $var_count
+	echo "---ENV variables can be set via command line."
+
+	echo "Usage: $0 <mezzanine_file> <output_file> [h264 | vp9]"
+	echo "    Defaults to h264 if third arg isn't given."
+        
+	exit 1
+fi
+
+ratecontrol="-maxrate:v $maxrate -bufsize:v $bufsize"
+movflags="-movflags +faststart"
+scene_change_off=""
+if [ "$vcodec" = "libvpx-vp9" ]; then
+    acodec=libopus
+    format=webm
+    tune=
+    profile=
+    x264tune=
+    vp9_tune="-speed $vp9_speed"
+    if [ "$crf" = "off" ]; then
+        crf=
+        crf_cmd=
+        ratecontrol="$ratecontrol -b:v $maxrate"
+    else
+        crf_cmd="-crf $crf"
+        ratecontrol="-b:v $maxrate"
+    fi
+    movflags=""
+    ap=
+    metrics=
+else
+    # H264 mode with x264
+    if [ "$crf" = "off" ]; then
+        crf_cmd=
+        ratecontrol="-maxrate:v $maxrate -bufsize:v $bufsize -b:v $bitrate"
+    else
+        crf_cmd="-crf $crf"
+    fi
+    scene_change_off="-x264opts no-scenecut"
+fi
+
+stats=$(mediainfo --Inform="Video;%ID%,%DisplayAspectRatio%,%FrameRate%" "$mezzanine")
+aspect=$(echo "$stats" | awk -F , '{print $2}')
+fps=$(echo "$stats" | awk -F , '{print $3}')
+echo "Encoding "$mezzanine" as "$encode" with Aspect: $aspect Framerate: $fps"
+
+
+#	-bsf:a aac_adtstoasc \
+ffmpeg -analyzeduration 338359000 -async 1 \
+	-i $mezzanine -threads $threads $metrics \
+	-r $fps -s $resolution -aspect "$aspect" -pix_fmt yuv420p -y \
+	-f $format $movflags \
+	$scene_change_off \
+	$extra_options \
+	$profile \
+	$tune $vp9_tune \
+	-vcodec $vcodec \
+        $x264tune $ratecontrol \
+        $crf_cmd \
+	-keyint_min $mingop -g $gop \
+	-acodec $acodec -ab $ab -ac $ac -ar $ar $ap \
+	-sn -dn -hide_banner -loglevel info \
+	-nostdin $encode
+

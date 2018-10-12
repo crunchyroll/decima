@@ -1,0 +1,34 @@
+#!/bin/sh
+
+if [ -z $1 -o -z $2 ]; then
+    echo "Usage: $0 <video_file> <output_file>"
+    exit 1
+fi
+fpath="$1"
+dpath="$2"
+
+video=$(basename "$dpath")
+video_base=$(echo "$video" | awk -F . '{print $1}')
+dpath_base=$(echo "$dpath" | awk -F . '{print $1}')
+dpath_basename=$(basename "$dpath")
+ext=$(echo "$video" | awk -F . '{print $2}')
+ext="avi"
+
+stats=$(mediainfo --Inform="Video;%ID%,%DisplayAspectRatio%,%FrameRate%,%BitRate%,%CodecID%,%Encoded_Library_Settings%" "$fpath")
+aspect=$(echo "$stats" | awk -F , '{print $2}')
+fps=$(echo "$stats" | awk -F , '{print $3}')
+bitrate=$(echo "$stats" | awk -F , '{print $4}')
+codecid=$(echo "$stats" | awk -F , '{print $5}')
+
+# decode entire video to raw video in an avi format
+ffmpeg -hide_banner -y -nostdin \
+        -i "$fpath" -f avi -vcodec rawvideo -pix_fmt yuv420p \
+        -dn -sn -an \
+            "$dpath"
+
+if [ ! -f "$dpath" ]; then
+    echo "ERROR: $dpath doesn't exist, failed to decode"
+    exit 1
+fi
+
+
