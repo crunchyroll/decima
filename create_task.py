@@ -53,7 +53,7 @@ def play_video_overlay(mezzanine, encode, blend_mode, mezz_level, enc_level, mod
     if mode == "blend":
         subprocess.call(['mpv', '--fs', '--opengl-glfinish=yes', '--opengl-early-flush=no', '--osd-bar=no', '--osc=no',
             mezzanine, '--external-file', encode,
-            '--lavfi-complex=[vid1]fps=%s,format=yuva420p,colorchannelmixer=aa=%s,setpts=PTS-STARTPTS[mezzanine];[vid2]fps=%s,format=yuva420p,colorchannelmixer=aa=%s,setpts=PTS-STARTPTS[encode];[mezzanine][encode]blend=%s[vo]' % (fps, mezz_level, fps, enc_level, blend_mode)]) 
+            '--lavfi-complex=[vid1]fps=%s,scale=%s:%s,format=yuva420p,colorchannelmixer=aa=%s,setpts=PTS-STARTPTS[mezzanine];[vid2]fps=%s,scale=%s:%s,format=yuva420p,colorchannelmixer=aa=%s,setpts=PTS-STARTPTS[encode];[mezzanine][encode]blend=%s[vo]' % (fps, width, height, mezz_level, fps, width, height, enc_level, blend_mode)]) 
     elif mode == "difference":
         subprocess.call(['mpv', '--fs', '--opengl-glfinish=yes', '--opengl-early-flush=no', '--osd-bar=no', '--osc=no',
             mezzanine, '--external-file', encode, '--external-file', encode,
@@ -71,7 +71,7 @@ def play_video_overlay(mezzanine, encode, blend_mode, mezz_level, enc_level, mod
         rate = vinfo[1]
         subprocess.call(['mpv', '--fs', '--opengl-glfinish=yes', '--opengl-early-flush=no', '--osd-bar=no', '--osc=no',
             mezzanine, '--external-file', encode,
-            '--lavfi-complex=color=c=Black:duration=1:size=%dx%d:rate=%s:sar=%s[black];color=c=Gray:duration=1:size=%dx%d:rate=%s:sar=%s[gray];color=c=Gray:duration=1:size=%dx%d:rate=%s:sar=%s[gray2];[vid1]fps=%s,scale=%s/2:%s,setsar=sar=%s,setpts=PTS-STARTPTS[mezzanine];[vid2]fps=%s,scale=%s/2:%s,setsar=sar=%s,setpts=PTS-STARTPTS[encode];[encode][mezzanine]hstack[sbs];[black][gray][sbs][gray2]concat=n=4:unsafe=1[vo]' % (width, height, rate, sar, width, height, rate, sar, width, height, rate, sar, fps, width, height, sar, fps, width, height, sar)]) 
+            '--lavfi-complex=color=c=Black:duration=1:size=%dx%d:rate=%s:sar=%s[black];color=c=Gray:duration=1:size=%dx%d:rate=%s:sar=%s[gray];color=c=Gray:duration=1:size=%dx%d:rate=%s:sar=%s[gray2];[vid1]fps=%s,scale=%s/2:%s,setsar=sar=%s,setpts=PTS-STARTPTS[mezzanine];[vid2]fps=%s,scale=%s/2:%s,setsar=sar=%s,setpts=PTS-STARTPTS[encode];[mezzanine][encode]hstack[sbs];[black][gray][sbs][gray2]concat=n=4:unsafe=1[vo]' % (width, height, rate, sar, width, height, rate, sar, width, height, rate, sar, fps, width, height, sar, fps, width, height, sar)]) 
 
 # Play video using Bino
 def play_video_bino(mezzanine, encode, mode):
